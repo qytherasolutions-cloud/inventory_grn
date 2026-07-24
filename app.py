@@ -156,30 +156,48 @@ def get_grn():
         input_csv = io.StringIO(res.text)
         reader = csv.reader(input_csv)
         rows = list(reader)
-
-        # Remove "Visual Qc Repairable" column
+        
         if rows:
-
+        
             header = rows[0]
-
+        
+            # Remove "Visual Qc Repairable" column
             if "Visual Qc Repairable" in header:
-
+        
                 remove_index = header.index("Visual Qc Repairable")
-
-                filtered_rows = []
-
+        
                 for row in rows:
                     if len(row) > remove_index:
                         row.pop(remove_index)
-                    filtered_rows.append(row)
-
-                rows = filtered_rows
-
+        
+                # Refresh header
+                header = rows[0]
+        
+            # Format GRN Date
+            if "GRN Date" in header:
+        
+                date_index = header.index("GRN Date")
+        
+                for row in rows[1:]:
+        
+                    if len(row) > date_index and row[date_index]:
+        
+                        try:
+                            dt = datetime.strptime(
+                                row[date_index],
+                                "%d-%m-%Y %I:%M %p"
+                            )
+        
+                            row[date_index] = dt.strftime("%d/%m/%Y")
+        
+                        except ValueError:
+                            pass
+        
         # Convert CSV back
         output = io.StringIO()
         writer = csv.writer(output, lineterminator="\n")
         writer.writerows(rows)
-
+        
         return Response(
             output.getvalue(),
             mimetype="text/csv",
