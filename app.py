@@ -4,25 +4,76 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
+# 🔥 MULTI WAREHOUSE CONFIG
+ACCOUNTS = {
+
+    "RATAN": {
+        "cred": "billdesk@swissmilitaryindia.com",
+        "password": "Emiza@123",
+        "seller_id": "80000493",
+        "warehouse_id": "600071",
+        "user_id": "300000000850"
+    },
+
+    "ACT B2B": {
+        "cred": "act@swissmilitaryindia.com",
+        "password": "Swiss@123",
+        "seller_id": "80000332",
+        "warehouse_id": "600040",
+        "user_id": "300000000462"
+    },
+
+    "RETAIL": {
+        "cred": "billdesk@swissmilitaryindia.com",
+        "password": "Emiza@123",
+        "seller_id": "80000333",
+        "warehouse_id": "600040",
+        "user_id": "300000000850"
+    },
+
+    "MUMBAI": {
+        "cred": "billdesk@swissmilitaryindia.com",
+        "password": "Emiza@123",
+        "seller_id": "80000329",
+        "warehouse_id": "600044",
+        "user_id": "300000000850"
+    },
+
+    "Nelamangala": {
+        "cred": "sanjay.mahto@swissmilitaryindia.com",
+        "password": "Emiza@123",
+        "seller_id": "80000476",
+        "warehouse_id": "600049",
+        "user_id": "300000000850"
+    }
+
+}
 
 
-# 🔥 GRN DOWNLOAD API (ACT B2B ONLY)
+@app.route("/")
+def home():
+    return "GRN Automation Running 🚀"
+
+
+# 🔥 GRN DOWNLOAD API
 @app.route("/get-grn", methods=["GET"])
 def get_grn():
 
     try:
 
         # -----------------------
-        # ACT B2B ACCOUNT
+        # GET WAREHOUSE
         # -----------------------
 
-        account = {
-            "cred": "act@swissmilitaryindia.com",
-            "password": "Swiss@123",
-            "seller_id": "80000332",
-            "warehouse_id": "600040",
-            "user_id": "300000000462"
-        }
+        warehouse = request.args.get("warehouse")
+
+        account = ACCOUNTS.get(warehouse)
+
+        if not account:
+            return jsonify({
+                "status": "FAILED",
+                "message": "Invalid warehouse"
+            })
 
         # -----------------------
         # LOGIN
@@ -73,7 +124,7 @@ def get_grn():
             "https://edge-service.emizainc.com/"
             "procurement/api/v1/good-received-notes/report/csv?"
             f"seller_id={account['seller_id']}"
-            f"&generated_by=Automation"
+            "&generated_by=Automation"
             f"&from={from_date}"
             f"&to={to_date}"
             "&filterBy=grn_created_at"
@@ -109,3 +160,7 @@ def get_grn():
             "status": "ERROR",
             "message": str(e)
         })
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
