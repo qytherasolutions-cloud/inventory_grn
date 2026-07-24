@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, Response
 import requests
 from datetime import datetime, timedelta
+import csv
+import io
 
 app = Flask(__name__)
 
@@ -144,10 +146,42 @@ def get_grn():
             "x-warehouse-id": account["warehouse_id"]
         }
 
+        # -----------------------
+        # DOWNLOAD CSV
+        # -----------------------
+
         res = requests.get(grn_url, headers=headers)
 
+        # Read CSV
+        input_csv = io.StringIO(res.text)
+        reader = csv.reader(input_csv)
+        rows = list(reader)
+
+        # Remove "Visual Qc Repairable" column
+        if rows:
+
+            header = rows[0]
+
+            if "Visual Qc Repairable" in header:
+
+                remove_index = header.index("Visual Qc Repairable")
+
+                filtered_rows = []
+
+                for row in rows:
+                    if len(row) > remove_index:
+                        row.pop(remove_index)
+                    filtered_rows.append(row)
+
+                rows = filtered_rows
+
+        # Convert CSV back
+        output = io.StringIO()
+        writer = csv.writer(output, lineterminator="\n")
+        writer.writerows(rows)
+
         return Response(
-            res.text,
+            output.getvalue(),
             mimetype="text/csv",
             headers={
                 "Content-Disposition": "attachment; filename=grn_report.csv"
