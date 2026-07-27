@@ -115,7 +115,7 @@ def get_grn():
 
         today = datetime.today()
 
-        from_date = (today - timedelta(days=5)).strftime("%Y-%m-%d")
+        from_date = (today - timedelta(days=15)).strftime("%Y-%m-%d")
         to_date = today.strftime("%Y-%m-%d")
 
         # -----------------------
